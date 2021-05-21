@@ -5,8 +5,7 @@ class CurrencyRepository {
   @override
   Future<CurrencyModel> get() async {
     final Dio dio = Dio();
-    dio.options.headers['content-Type'] = 'application/json';
-    const request = "https://api.hgbrasil.com/finance?format=json&key=60df7607";
+    const request = "https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL";
     final response = await dio.get(request,
         options: new Options(contentType: 'application/json'));
 

@@ -74,7 +74,6 @@ class _HomePageState extends State<HomePage> {
       future: _repository.get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          // final CurrencyModel posts = snapshot;
           return Container(
             height: double.infinity,
             width: double.infinity,

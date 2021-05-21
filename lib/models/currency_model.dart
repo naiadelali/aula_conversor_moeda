@@ -17,12 +17,13 @@ class CurrencyModel {
 
   factory CurrencyModel.fromMap(Map<String, dynamic> map) {
     return CurrencyModel(
-      map['dolar'],
-      map['euro'],
+      double.parse(map['USDBRL']['low']??0),
+      double.parse(map['EURBRL']['low']??0),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory CurrencyModel.fromJson(String source) => CurrencyModel.fromMap(json.decode(source));
+  factory CurrencyModel.fromJson(String source) =>
+      CurrencyModel.fromMap(json.decode(source));
 }
