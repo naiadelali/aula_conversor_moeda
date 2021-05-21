@@ -1,4 +1,5 @@
 import 'package:aula_conversor_moeda/components/default_input.dart';
+import 'package:aula_conversor_moeda/home_controller.dart';
 import 'package:aula_conversor_moeda/repositories/currency_repository.dart';
 import 'package:flutter/material.dart';
 
@@ -13,38 +14,48 @@ class _HomePageState extends State<HomePage> {
   final _realTextEditingController = TextEditingController();
   final _dolarTextEditingController = TextEditingController();
   final _euroTextEditingController = TextEditingController();
-  final _repository = CurrencyRepository();
+  final HomeController _controller = HomeController();
 
-  late CurrencyModel _currency;
+  CurrencyModel? _currency;
 
   @override
   void initState() {
     super.initState();
-    _currency = CurrencyModel(0.0, 0.0);
+    _controller.getCurrencyRealToEuroAndDolar().then((value) {
+      setState(() {
+        _currency = value;
+      });
+    });
   }
 
   void realChanges(String text) {
-    double real = double.parse(text);
-    _dolarTextEditingController.text =
-        (real / _currency.dolar).toStringAsFixed(2);
-    _euroTextEditingController.text =
-        (real / _currency.euro).toStringAsFixed(2);
+    double real = double.tryParse(text) ?? 0;
+    if (_currency != null) {
+      _dolarTextEditingController.text =
+          (real * _currency!.dolar).toStringAsFixed(2);
+      _euroTextEditingController.text =
+          (real * _currency!.euro).toStringAsFixed(2);
+    }
   }
 
   void dolarChanges(String text) {
-    double dolar = double.parse(text);
-    _realTextEditingController.text =
-        (dolar * _currency.dolar).toStringAsFixed(2);
-    _euroTextEditingController.text =
-        (dolar * _currency.dolar / _currency.euro).toStringAsFixed(2);
+    double dolar = double.tryParse(text) ?? 0;
+    if (_currency != null) {
+      _realTextEditingController.text =
+          (dolar * _currency!.dolar).toStringAsFixed(2);
+      _euroTextEditingController.text =
+          (dolar * _currency!.dolar / _currency!.euro).toStringAsFixed(2);
+    }
   }
 
   void euroChanges(String text) {
-    double euro = double.parse(text);
-    _realTextEditingController.text =
-        (euro * _currency.euro).toStringAsFixed(2);
-    _dolarTextEditingController.text =
-        (euro * _currency.euro / _currency.dolar).toStringAsFixed(2);
+    double euro = double.tryParse(text) ?? 0;
+    if (_currency != null) {
+      _realTextEditingController.text =
+          (euro * _currency!.euro).toStringAsFixed(2);
+      _dolarTextEditingController.text =
+          (euro * _currency!.euro / _currency!.dolar).toStringAsFixed(2);
+    }
   }
 
   @override
@@ -69,58 +80,53 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  FutureBuilder<CurrencyModel> _buildBody(BuildContext context) {
-    return FutureBuilder<CurrencyModel>(
-      future: _repository.get(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return Container(
-            height: double.infinity,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.black,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Icon(
-                      Icons.attach_money,
-                      color: Theme.of(context).primaryColor,
-                      size: 180,
-                    ),
-                  ),
-                  DefaultInput(
-                    labelText: 'Reais',
-                    prefixText: 'R\$ ',
-                    controller: _realTextEditingController,
-                    onChange: realChanges,
-                  ),
-                  DefaultInput(
-                    labelText: 'Dólares',
-                    prefixText: 'US\$ ',
-                    controller: _dolarTextEditingController,
-                    onChange: dolarChanges,
-                  ),
-                  DefaultInput(
-                    labelText: 'Euros',
-                    prefixText: '€ ',
-                    controller: _euroTextEditingController,
-                    onChange: dolarChanges,
-                  )
-                ],
+  Widget _buildBody(BuildContext context) {
+    if (_currency != null) {
+      return Container(
+        height: double.infinity,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.black,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Icon(
+                  Icons.attach_money,
+                  color: Theme.of(context).primaryColor,
+                  size: 180,
+                ),
               ),
-            ),
-          );
-        } else {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-      },
-    );
+              DefaultInput(
+                labelText: 'Reais',
+                prefixText: 'R\$ ',
+                controller: _realTextEditingController,
+                onChange: realChanges,
+              ),
+              DefaultInput(
+                labelText: 'Dólares',
+                prefixText: 'US\$ ',
+                controller: _dolarTextEditingController,
+                onChange: dolarChanges,
+              ),
+              DefaultInput(
+                labelText: 'Euros',
+                prefixText: '€ ',
+                controller: _euroTextEditingController,
+                onChange: euroChanges,
+              )
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
   }
 }
