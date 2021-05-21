@@ -25,6 +25,8 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _currency = value;
       });
+    }).catchError((error, stackTrace) {
+      print('Error: $error');
     });
   }
 
